@@ -23,6 +23,11 @@ function setSafeStorageDB()
 
 function searchSafeStorage()
 {
+	if [ -z "$SAFESTORAGE_DB" ]; then
+		echo "SafeStorage database not set. Run setSafeStorageDB."
+		return 1
+	fi
+
 	if [ -f "$SAFESTORAGE_DB" ]; then
 		# openssl aes-256-cbc -d -a -in secrets.txt.enc -out secrets.txt.new
 		DECTEXT=`gpg -o - --quiet --yes --decrypt "$SAFESTORAGE_DB"`
@@ -40,6 +45,11 @@ function searchSafeStorage()
 
 function writeSafeStorage()
 {
+	if [ -z "$SAFESTORAGE_DB" ]; then
+		echo "SafeStorage database not set. Run setSafeStorageDB."
+		return 1
+	fi
+
 	trap "" SIGINT
 
 	if [ -f "$SAFESTORAGE_DB" ]; then
