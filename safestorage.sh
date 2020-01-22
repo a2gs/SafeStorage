@@ -18,7 +18,7 @@ export SAFESTORAGE_DB=''
 
 function setSafeStorageDB()
 {
-	export SAFESTORAGE_DB=$1
+	export SAFESTORAGE_DB="$1"
 }
 
 function searchSafeStorage()
@@ -42,14 +42,10 @@ function writeSafeStorage()
 {
 	trap "" SIGINT
 
-	TEMP_FILE=`mktemp --quiet --tmpdir=./`
-	if [ ! -f "$TEMP_FILE" ]; then
-		echo "Error creating temporary file" >&2
-		trap - SIGINT
-		return 1
-	fi
-
 	if [ -f "$SAFESTORAGE_DB" ]; then
+		
+		TEMP_FILE="$SAFESTORAGE_DB".tmp
+
 		# openssl aes-256-cbc -d -a -in secrets.txt.enc -out secrets.txt.new
 		gpg -o "$TEMP_FILE" --quiet --yes --decrypt "$SAFESTORAGE_DB"
 		if [ $? -ne 0 ]; then
@@ -58,9 +54,13 @@ function writeSafeStorage()
 			trap - SIGINT
 			return 1
 		fi
+
+		echo "$1" >> "$TEMP_FILE"
+	else
+		TEMP_FILE="$SAFESTORAGE_DB".tmp
+		echo "$1" > "$TEMP_FILE"
 	fi
 
-	echo "$1" >> "$TEMP_FILE"
 
 	# openssl aes-256-cbc -a -salt -in secrets.txt -out secrets.txt.enc
 	gpg -o "$SAFESTORAGE_DB" --quiet --yes --symmetric --cipher-algo AES256 "$TEMP_FILE"
