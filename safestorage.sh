@@ -71,7 +71,6 @@ function writeSafeStorage()
 		echo "$1" > "$TEMP_FILE"
 	fi
 
-
 	# openssl aes-256-cbc -a -salt -in secrets.txt -out secrets.txt.enc
 	gpg -o "$SAFESTORAGE_DB" --quiet --yes --symmetric --cipher-algo AES256 "$TEMP_FILE"
 	if [ $? -ne 0 ]; then
