@@ -24,7 +24,15 @@ function setSafeStorageDB()
 function searchSafeStorage()
 {
 	if [ -f "$SAFESTORAGE_DB" ]; then
-		gpg -o - --quiet --yes --decrypt "$SAFESTORAGE_DB" | grep "$1"
+		# openssl aes-256-cbc -d -a -in secrets.txt.enc -out secrets.txt.new
+		DECTEXT=`gpg -o - --quiet --yes --decrypt "$SAFESTORAGE_DB"`
+		if [ $? -ne 0 ]; then
+			echo "Error decrypting SafeStorage DB $SAFESTORAGE_DB" >&2
+			return 1
+		fi
+
+		echo "$DECTEXT" | grep "$1"
+		unset DECTEXT
 	fi
 
 	return 0
@@ -43,6 +51,7 @@ function writeSafeStorage()
 
 	if [ -f "$SAFESTORAGE_DB" ]; then
 
+		# openssl aes-256-cbc -d -a -in secrets.txt.enc -out secrets.txt.new
 		gpg -o "$TEMP_FILE" --quiet --yes --decrypt "$SAFESTORAGE_DB"
 		if [ $? -ne 0 ]; then
 			echo "Error decrypting SafeStorage DB $SAFESTORAGE_DB" >&2
@@ -55,6 +64,7 @@ function writeSafeStorage()
 
 	echo "$1" >> "$TEMP_FILE"
 
+	# openssl aes-256-cbc -a -salt -in secrets.txt -out secrets.txt.enc
 	gpg -o "$SAFESTORAGE_DB" --quiet --yes --symmetric --cipher-algo AES256 "$TEMP_FILE"
 	if [ $? -ne 0 ]; then
 		echo "Error encrypting SafeStorage DB $SAFESTORAGE_DB" >&2
