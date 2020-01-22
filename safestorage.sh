@@ -50,7 +50,6 @@ function writeSafeStorage()
 	fi
 
 	if [ -f "$SAFESTORAGE_DB" ]; then
-
 		# openssl aes-256-cbc -d -a -in secrets.txt.enc -out secrets.txt.new
 		gpg -o "$TEMP_FILE" --quiet --yes --decrypt "$SAFESTORAGE_DB"
 		if [ $? -ne 0 ]; then
@@ -59,7 +58,6 @@ function writeSafeStorage()
 			trap - SIGINT
 			return 1
 		fi
-
 	fi
 
 	echo "$1" >> "$TEMP_FILE"
