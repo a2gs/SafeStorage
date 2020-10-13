@@ -18,13 +18,20 @@ export SAFESTORAGE_DB=''
 
 function setSafeStorageDB()
 {
+	if [ "$#" -eq 0 ];
+	then
+		echo -e "Usage:\n\t$FUNCNAME [YOUR_ENCRYPTED_DATABASE_FILE]"
+		return 1
+	fi
+
 	export SAFESTORAGE_DB="$1"
+	return 0
 }
 
 function searchSafeStorage()
 {
 	if [ -z "$SAFESTORAGE_DB" ]; then
-		echo "SafeStorage database not set. Run setSafeStorageDB."
+		echo -e "SafeStorage database not set. Run:\n\tsetSafeStorageDB [YOUR_ENCRYPTED_DATABASE_FILE]."
 		return 1
 	fi
 
@@ -46,7 +53,7 @@ function searchSafeStorage()
 function writeSafeStorage()
 {
 	if [ -z "$SAFESTORAGE_DB" ]; then
-		echo "SafeStorage database not set. Run setSafeStorageDB."
+		echo -e "SafeStorage database not set. Run:\n\tsetSafeStorageDB [YOUR_ENCRYPTED_DATABASE_FILE]."
 		return 1
 	fi
 
@@ -72,7 +79,7 @@ function writeSafeStorage()
 	fi
 
 	# openssl aes-256-cbc -a -salt -in secrets.txt -out secrets.txt.enc
-	gpg -o "$SAFESTORAGE_DB" --quiet --yes --symmetric --cipher-algo AES256 "$TEMP_FILE"
+	gpg -o "$SAFESTORAGE_DB" --quiet --yes --armor --symmetric --cipher-algo AES256 "$TEMP_FILE"
 	if [ $? -ne 0 ]; then
 		echo "Error encrypting SafeStorage DB $SAFESTORAGE_DB" >&2
 		rm -f "$TEMP_FILE"
@@ -85,3 +92,20 @@ function writeSafeStorage()
 
 	return 0
 }
+
+if [ "$0" = "$BASH_SOURCE" ]; then
+
+	echo -e "SafeStorage shell functions didnt load. Usage:\n\tsource $0"
+	exit 1
+
+else
+
+	echo "SafeStorage shell functions loaded. Define your encrypted database:"
+	echo -e "\tsetSafeStorageDB [YOUR_ENCRYPTED_DATABASE_FILE]"
+	echo -e "\t\tYOUR_ENCRYPTED_DATABASE_FILE mandatory. Will be created if not exists."
+	echo
+	echo "Then you are able to call writeSafeStorage and searchSafeStorage functions."
+
+	return 0
+
+fi
